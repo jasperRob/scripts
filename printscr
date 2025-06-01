@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Generate timestamp-based filename
+filename="$HOME/Pictures/screenshots/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png"
+
+# Check if "-window" is passed as the first argument
+if [ "$1" = "-window" ]; then
+  import -window root "$filename"
+else
+  import "$filename"
+fi
+
+notify-send "Screenshot Saved" "$filename"
