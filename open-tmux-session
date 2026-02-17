@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Function to attach to session, or switch to if already inside tmux 
+attach_or_switch() {
+  local session=$1
+  if [ -n "$TMUX" ]; then
+    tmux switch-client -t "$session"
+  else
+    tmux attach -t "$session"
+  fi
+}
+
+if [ -n "$1" ]; then
+  choice="$1"
+else
+  echo "Select a session to open:"
+  echo "  1) development"
+  echo "  2) notes"
+  echo "  3) config"
+  echo "  3) miscellaneous"
+  read -rp "Enter choice [1-3]: " choice
+fi
+
+case "$choice" in
+  1|development|dev)    SESSION="dev" ;;
+  2|notes)              SESSION="notes" ;;
+  3|config)             SESSION="config" ;;
+  4|misc|miscellaneous) SESSION="misc" ;;
+  *)
+    echo "Invalid choice: $choice"
+    exit 1
+    ;;
+esac
+
+# Attach if session already exists
+tmux has-session -t "$SESSION" 2>/dev/null
+if [ $? -eq 0 ]; then
+  echo "Switching to existing session: $SESSION"
+  attach_or_switch "$SESSION"
+  exit 0
+fi
+
+case "$SESSION" in
+  dev)
+    tmux new-session -d -s "$SESSION" -n 'servers' -c ~/src/kogan/K3
+
+    # Pane 1: node server
+    tmux send-keys -t "$SESSION:1.0" 'cd k4 && npm run dev:au' C-m
+
+    # Pane 2: k3 server
+    tmux split-window -h -t "$SESSION:1" -c ~/src/kogan/K3
+    tmux send-keys -t "$SESSION:1.1" './dev_setup.sh service_up && ./shortcuts.sh start_k3' C-m
+
+    # Window 2: venv
+    tmux new-window -t "$SESSION:2" -n 'venv' -c ~/src/kogan/K3
+    tmux send-keys -t "$SESSION:2" 'source .venv/bin/activate' C-m
+    ;;
+
+  notes)
+    tmux new-session -d -s "$SESSION" -n 'notes' -c ~/src/jasperRob/notes
+    ;;
+
+  config)
+    tmux new-session -d -s "$SESSION" -n 'config' -c ~
+    ;;
+  misc)
+    tmux new-session -d -s "$SESSION" -n 'misc' -c ~/misc
+    ;;
+esac
+
+# Attach or switch to the session
+attach_or_switch "$SESSION"
