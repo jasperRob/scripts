@@ -41,22 +41,44 @@ colour-coded status bars.
 open-tmux-session
 
 # Direct session name or number
-open-tmux-session k3
-open-tmux-session 2        # notes
+open-tmux-session notes
+open-tmux-session 1        # first registered session
 ```
 
-**Sessions:**
+**Built-in sessions:**
 
-| Key            | Session | Working Dir             | Status Bar |
-| -------------- | ------- | ----------------------- | ---------- |
-| `1` / `k3`     | k3      | `~/src/kogan/K3`        | Blue       |
-| `1` / `kowhai` | kowhai  | `~/src/kogan/Kowhai`    | Lavender   |
-| `2` / `notes`  | notes   | `~/src/jasperRob/notes` | Magenta    |
-| `3` / `config` | config  | `~/`                    | Orange     |
-| `4` / `misc`   | misc    | `~/misc`                | Green      |
+| Key              | Session | Working Dir             | Status Bar |
+| ---------------- | ------- | ----------------------- | ---------- |
+| `1` / `notes`    | notes   | `~/src/jasperRob/notes` | Magenta    |
+| `2` / `config`   | config  | `~/`                    | Orange     |
+| `3` / `misc`     | misc    | `~/misc`                | Green      |
 
 If the session already exists, attaches to it (or switches client if already
 inside tmux).
+
+**Local addon sessions:**
+
+Machine-specific sessions (e.g. work projects) can be added without touching
+this repo. Drop a `.sh` file into `~/.config/open-tmux-sessions/` — it will be
+sourced automatically on startup.
+
+Each file defines a setup function and calls `register_session`:
+
+```sh
+# ~/.config/open-tmux-sessions/myproject.sh
+
+_setup_myproject() {
+  tmux new-session -d -s "$SESSION" -n 'main' -c ~/src/myproject/
+  set_style "$SESSION" colour4 colour0
+  tmux send-keys -t "$SESSION:1.0" 'npm run dev' C-m
+}
+
+register_session "myproject" "My Project" "_setup_myproject"
+```
+
+The setup function has access to `$SESSION`, `set_style`, and
+`attach_or_switch`. Registered sessions appear in the interactive menu in the
+order they were loaded (built-ins first, then addons sorted by filename).
 
 ---
 
