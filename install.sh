@@ -2,21 +2,4 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# If bin directory does not exist, create it
-mkdir -p ~/bin
-
-# Vreate symlinks to all other executable scripts in this directory in ~/bin
-for file in "$SCRIPT_DIR"/*; do
-  [ "$file" = "$SCRIPT_DIR/install.sh" ] && continue
-  [ "$(basename "$file")" = "README.md" ] && continue
-  [ -x "$file" ] || continue
-
-  name="$(basename "$file")"
-  if [ -L ~/bin/"$name" ] && [ "$(readlink ~/bin/"$name")" = "$file" ]; then
-    echo "Skipped (already linked): ~/bin/$name"
-    continue
-  fi
-
-  ln -sf "$file" ~/bin/"$name"
-  echo "Linked: ~/bin/$name -> $file"
-done
+"$SCRIPT_DIR/install-script" "$SCRIPT_DIR"

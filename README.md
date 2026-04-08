@@ -4,7 +4,7 @@ A collection of personal shell scripts for macOS/Linux workflow automation.
 
 ## Installation
 
-Run `install.sh` to symlink all scripts into `~/bin`:
+Run `install.sh` to symlink all scripts (including `install-script` itself) into `~/bin`:
 
 ```sh
 ./install.sh
@@ -12,6 +12,27 @@ Run `install.sh` to symlink all scripts into `~/bin`:
 
 Ensure `~/bin` is on your `$PATH`. The script skips scripts that are already
 linked and won't overwrite mismatched symlinks without re-running.
+
+### `install-script`
+
+The core install logic lives in `install-script`, a standalone utility that can
+be used by other projects to consolidate their install logic.
+
+```sh
+# Install scripts from another project after install-script is in ~/bin
+install-script /path/to/other/project/scripts
+```
+
+Other projects can use it in their own `install.sh`:
+
+```sh
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+install-script "$SCRIPT_DIR"
+```
+
+`install-script` links all executables in the given directory into `~/bin`,
+skipping `install.sh` and `README.md`. It links itself when run from this repo.
 
 ## Usage
 

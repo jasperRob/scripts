@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Usage: install-script <source_dir>
+#
+# Creates symlinks in ~/bin for all executable files in <source_dir>.
+# Skips install.sh, install-script, and README.md.
+
+SOURCE_DIR="${1:?Usage: install-script <source_dir>}"
+SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
+
+mkdir -p ~/bin
+
+for file in "$SOURCE_DIR"/*; do
+  name="$(basename "$file")"
+  [ "$name" = "install.sh" ] && continue
+  [ "$name" = "README.md" ] && continue
+  [ -x "$file" ] || continue
+
+  if [ -L ~/bin/"$name" ] && [ "$(readlink ~/bin/"$name")" = "$file" ]; then
+    echo "Skipped (already linked): ~/bin/$name"
+    continue
+  fi
+
+  ln -sf "$file" ~/bin/"$name"
+  echo "Linked: ~/bin/$name -> $file"
+done
