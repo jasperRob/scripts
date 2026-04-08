@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-# Function to attach to session, or switch to if already inside tmux 
+# Colour Pallete: https://i.sstatic.net/e63et.png
+
+set_style() {
+  local session=$1 bg=$2 fg=${3:-}
+  tmux set -t "$session" status-bg "$bg"
+  [ -n "$fg" ] && tmux set -t "$session" status-fg "$fg"
+}
+
+# Function to attach to session, or switch to if already inside tmux
 attach_or_switch() {
   local session=$1
   if [ -n "$TMUX" ]; then
@@ -14,7 +22,7 @@ if [ -n "$1" ]; then
   choice="$1"
 else
   echo "Select a session to open:"
-  echo "  1) development"
+  echo "  1) k3"
   echo "  2) notes"
   echo "  3) config"
   echo "  3) miscellaneous"
@@ -22,7 +30,8 @@ else
 fi
 
 case "$choice" in
-  1|development|dev)    SESSION="dev" ;;
+  1|k3)                 SESSION="k3" ;;
+  1|kowhai)             SESSION="kowhai" ;;
   2|notes)              SESSION="notes" ;;
   3|config)             SESSION="config" ;;
   4|misc|miscellaneous) SESSION="misc" ;;
@@ -41,8 +50,9 @@ if [ $? -eq 0 ]; then
 fi
 
 case "$SESSION" in
-  dev)
-    tmux new-session -d -s "$SESSION" -n 'servers' -c ~/src/kogan/K3
+  k3)
+    tmux new-session -d -s "$SESSION" -n 'servers' -c ~/src/kogan/K3/
+    set_style "$SESSION" colour4 colour0
 
     # Pane 1: node server
     tmux send-keys -t "$SESSION:1.0" 'cd k4 && npm run dev:au' C-m
@@ -55,16 +65,35 @@ case "$SESSION" in
     tmux new-window -t "$SESSION:2" -n 'venv' -c ~/src/kogan/K3
     tmux send-keys -t "$SESSION:2" 'source .venv/bin/activate' C-m
     ;;
+  kowhai)
+    tmux new-session -d -s "$SESSION" -n 'servers' -c ~/src/kogan/Kowhai/
+    set_style "$SESSION" colour147 colour0
+
+    # Pane 1: node server
+    tmux send-keys -t "$SESSION:1.0" 'cd frontend && yarn run dev' C-m
+
+    # Pane 2: k3 server
+    tmux split-window -h -t "$SESSION:1" -c ~/src/kogan/Kowhai/
+    tmux send-keys -t "$SESSION:1.1" 'dc up django' C-m
+
+    # Window 2: venv
+    tmux new-window -t "$SESSION:2" -n 'venv' -c ~/src/kogan/Kowhai/
+    tmux send-keys -t "$SESSION:2" 'source .venv/bin/activate' C-m
+    ;;
 
   notes)
-    tmux new-session -d -s "$SESSION" -n 'notes' -c ~/src/jasperRob/notes
+    tmux new-session -d -s "$SESSION" -n 'notes' -c ~/src/jasperRob/notes/
+    set_style "$SESSION" colour5 colour0
     ;;
 
   config)
-    tmux new-session -d -s "$SESSION" -n 'config' -c ~
+    tmux new-session -d -s "$SESSION" -n 'config' -c ~/
+    set_style "$SESSION" colour209 colour0
     ;;
+
   misc)
-    tmux new-session -d -s "$SESSION" -n 'misc' -c ~/misc
+    tmux new-session -d -s "$SESSION" -n 'misc' -c ~/misc/
+    set_style "$SESSION" colour2 colour0
     ;;
 esac
 

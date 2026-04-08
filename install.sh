@@ -12,6 +12,11 @@ for file in "$SCRIPT_DIR"/*; do
   [ -x "$file" ] || continue
 
   name="$(basename "$file")"
+  if [ -L ~/bin/"$name" ] && [ "$(readlink ~/bin/"$name")" = "$file" ]; then
+    echo "Skipped (already linked): ~/bin/$name"
+    continue
+  fi
+
   ln -sf "$file" ~/bin/"$name"
   echo "Linked: ~/bin/$name -> $file"
 done

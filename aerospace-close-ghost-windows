@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+aerospace list-windows --all --json \
+  | if [[ -n "$1" ]]; then
+      jq --arg app "$1" '.[] | select(."app-name" == $app and ."window-title" == "") | .["window-id"]'
+    else
+      jq '.[] | select(."window-title" == "") | .["window-id"]'
+    fi \
+  | xargs -I {} aerospace close --window-id {}
